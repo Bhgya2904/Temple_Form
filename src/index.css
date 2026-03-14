@@ -339,7 +339,8 @@ body {
   .receipt-wrapper {
     width: 80mm !important;
     max-width: 80mm !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
+    /* Forces the receipt to sit directly in the middle of standard A4 paper previews */
     padding: 0 !important;
     height: auto !important;
     page-break-after: avoid !important;
@@ -349,7 +350,7 @@ body {
   .receipt-container {
     width: 80mm !important;
     max-width: 80mm !important;
-    margin: 0 !important;
+    margin: 0 auto !important;
     padding: 2mm !important;
     /* Tiny edge breathing room */
     box-shadow: none !important;
