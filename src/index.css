@@ -265,14 +265,17 @@ body {
     background-color: #f7f7f7;
   }
 
-  .receipt-container {
-    padding: 30px 20px;
-    border-radius: 20px;
-    margin: 0 10px;
+  .receipt-wrapper {
+    margin: 0 auto;
+    max-width: 350px;
+    /* Ensure it stays narrow like a real paper receipt on phones */
   }
 
-  .receipt-wrapper {
+  .receipt-container {
+    padding: 30px 20px;
+    border-radius: 16px;
     margin: 0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   }
 
   .receipt-total-screen {
