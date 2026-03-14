@@ -315,6 +315,9 @@ body {
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: hidden !important;
   }
 
   /* Hide everything except the receipt */
@@ -338,6 +341,9 @@ body {
     max-width: 80mm !important;
     margin: 0 !important;
     padding: 0 !important;
+    height: auto !important;
+    page-break-after: avoid !important;
+    page-break-before: avoid !important;
   }
 
   .receipt-container {
