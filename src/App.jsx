@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Form, Button, Card, Navbar } from 'react-bootstrap';
 import { Printer, Edit3, CheckCircle, Languages } from 'lucide-react';
 import './index.css';
-import logo from './assets/logo.png'; // Make sure the logo is named correctly
+import logo from './assets/logo.png';
+
 
 const dictionaries = {
   en: {
@@ -70,7 +71,26 @@ function App() {
     amount: 0
   });
 
+  const [translatedData, setTranslatedData] = useState({
+    name: '', gothram: '', nakshatram: '', raasi: ''
+  });
+  const [isTranslating, setIsTranslating] = useState(false);
+
   const t = dictionaries[lang];
+
+  const transliterate = async (text) => {
+    if (!text) return text;
+    try {
+      const response = await fetch(`https://inputtools.google.com/request?text=${encodeURIComponent(text)}&itc=te-t-i0-und&num=1&cp=0&cs=1&ie=utf-8`);
+      const data = await response.json();
+      if (data[0] === 'SUCCESS' && data[1] && data[1][0] && data[1][0][1] && data[1][0][1][0]) {
+        return data[1][0][1][0];
+      }
+    } catch (err) {
+      console.error('Translation failed', err);
+    }
+    return text; // fallback
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -91,12 +111,28 @@ function App() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.pooja || !formData.name) {
       alert("Please fill necessary details: Name & Pooja selection.");
       return;
     }
+
+    setIsTranslating(true);
+    // Translate the text fields into Telugu dynamically on submission
+    const tName = await transliterate(formData.name);
+    const tGothram = await transliterate(formData.gothram);
+    const tNakshatram = await transliterate(formData.nakshatram);
+    const tRaasi = await transliterate(formData.raasi);
+
+    setTranslatedData({
+      name: tName,
+      gothram: tGothram,
+      nakshatram: tNakshatram,
+      raasi: tRaasi
+    });
+
+    setIsTranslating(false);
     setView('receipt');
   };
 
@@ -273,9 +309,9 @@ function App() {
               </Row>
 
               <div className="d-grid mt-2">
-                <Button type="submit" className="btn-primary-custom d-flex justify-content-center align-items-center gap-2" size="lg">
+                <Button type="submit" disabled={isTranslating} className="btn-primary-custom d-flex justify-content-center align-items-center gap-2" size="lg">
                   <CheckCircle size={22} />
-                  {t.submit}
+                  {isTranslating ? (lang === 'te' ? 'అనువదిస్తోంది...' : 'Translating...') : t.submit}
                 </Button>
               </div>
             </Form>
@@ -298,7 +334,7 @@ function App() {
                 </div>
                 <div className="receipt-item-screen">
                   <span className="label">{t.name}:</span>
-                  <span className="value">{formData.name}</span>
+                  <span className="value">{lang === 'te' ? translatedData.name : formData.name}</span>
                 </div>
                 {formData.mobile && (
                   <div className="receipt-item-screen">
@@ -309,21 +345,19 @@ function App() {
                 {formData.gothram && (
                   <div className="receipt-item-screen">
                     <span className="label">{t.gothram}:</span>
-                    <span className="value">{formData.gothram}</span>
+                    <span className="value">{lang === 'te' ? translatedData.gothram : formData.gothram}</span>
                   </div>
                 )}
-                {(formData.nakshatram || formData.raasi) && (
+                {formData.nakshatram && (
                   <div className="receipt-item-screen">
-                    <span className="label">
-                      {formData.nakshatram ? t.nakshatram : ''}
-                      {formData.nakshatram && formData.raasi ? ` / ` : ''}
-                      {formData.raasi ? t.raasi : ''}:
-                    </span>
-                    <span className="value">
-                      {formData.nakshatram}
-                      {formData.nakshatram && formData.raasi ? ` / ` : ''}
-                      {formData.raasi}
-                    </span>
+                    <span className="label">{t.nakshatram}:</span>
+                    <span className="value">{lang === 'te' ? translatedData.nakshatram : formData.nakshatram}</span>
+                  </div>
+                )}
+                {formData.raasi && (
+                  <div className="receipt-item-screen">
+                    <span className="label">{t.raasi}:</span>
+                    <span className="value">{lang === 'te' ? translatedData.raasi : formData.raasi}</span>
                   </div>
                 )}
                 <div className="receipt-item-screen mt-2" style={{ borderTop: '2px dashed #eee', paddingTop: '15px' }}>

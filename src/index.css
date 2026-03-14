@@ -301,18 +301,27 @@ body {
 /* Thermal Printer 80mm Specific Rules */
 @media print {
   @page {
-    margin: 0;
-    size: 80mm;
+    margin: 0 !important;
+    size: 78mm auto;
+    /* 3 inches roll, auto height */
   }
 
   body {
     background-color: white !important;
     background-image: none !important;
-    margin: 0;
-    padding: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
   }
 
   /* Hide everything except the receipt */
+  .app-main-wrapper,
+  .app-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
   .app-container> :not(.receipt-wrapper),
   .temple-navbar,
   .print-buttons,
@@ -322,22 +331,25 @@ body {
   }
 
   .receipt-wrapper {
-    width: 80mm;
-    margin: 0;
-    padding: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .receipt-container {
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    padding: 1mm;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 2mm !important;
+    /* Tiny edge breathing room */
     box-shadow: none !important;
     border: none !important;
     border-radius: 0;
     font-family: 'Courier New', Courier, monospace !important;
-    font-size: 11px !important;
-    line-height: 1.1 !important;
+    font-size: 13px !important;
+    /* slightly larger for readability on full span */
+    line-height: 1.2 !important;
     color: black !important;
   }
 
