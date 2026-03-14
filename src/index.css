@@ -322,7 +322,7 @@ body {
   .app-container {
     margin: 0 !important;
     padding: 0 !important;
-    width: 100% !important;
+    width: auto !important;
   }
 
   .app-container> :not(.receipt-wrapper),
@@ -334,15 +334,15 @@ body {
   }
 
   .receipt-wrapper {
-    width: 100% !important;
-    max-width: 100% !important;
+    width: 80mm !important;
+    max-width: 80mm !important;
     margin: 0 !important;
     padding: 0 !important;
   }
 
   .receipt-container {
-    width: 100% !important;
-    max-width: 100% !important;
+    width: 80mm !important;
+    max-width: 80mm !important;
     margin: 0 !important;
     padding: 2mm !important;
     /* Tiny edge breathing room */
