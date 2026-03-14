@@ -302,99 +302,129 @@ body {
 }
 
 /* Thermal Printer 80mm Specific Rules */
-/* STRICT 3-INCH THERMAL PRINTING RULES */
 @media print {
-
-  /* 1. Force the paper size and remove margins */
   @page {
-    size: 80mm auto;
-    /* 80mm is the standard for 3-inch printers */
     margin: 0 !important;
+    size: 78mm auto;
+    /* 3 inches roll, auto height */
   }
 
-  /* 2. Reset everything to fit the 3-inch roll */
-  html,
   body {
-    width: 80mm !important;
+    background-color: white !important;
+    background-image: none !important;
     margin: 0 !important;
     padding: 0 !important;
-    background: #fff !important;
-    -webkit-print-color-adjust: exact;
+    width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: hidden !important;
   }
 
-  /* 3. Hide all UI elements */
-  .no-print,
+  /* Hide everything except the receipt */
+  .app-main-wrapper,
+  .app-container {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+  }
+
+  .app-container> :not(.receipt-wrapper),
   .temple-navbar,
   .print-buttons,
-  .navbar,
-  .main-content {
+  .language-toggle,
+  .no-print {
     display: none !important;
   }
 
-  /* 4. Force the Receipt Wrapper to take the full 3-inch width */
   .receipt-wrapper {
-    display: block !important;
-    width: 80mm !important;
-    max-width: 80mm !important;
-    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    /* Forces the receipt to sit directly in the middle of standard A4 paper previews */
     padding: 0 !important;
-    position: absolute;
-    top: 0;
-    left: 0;
+    height: auto !important;
+    page-break-after: avoid !important;
+    page-break-before: avoid !important;
   }
 
   .receipt-container {
-    width: 80mm !important;
-    padding: 5mm !important;
-    /* Internal padding for the receipt text */
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 2mm !important;
+    /* Tiny edge breathing room */
     box-shadow: none !important;
     border: none !important;
-    border-radius: 0 !important;
+    border-radius: 0;
     font-family: 'Courier New', Courier, monospace !important;
-    font-size: 14px !important;
-    /* Slightly larger for thermal readability */
-    color: #000 !important;
+    font-size: 13px !important;
+    /* slightly larger for readability on full span */
+    line-height: 1.2 !important;
+    color: black !important;
   }
 
-  /* 5. Force items to stay side-by-side (No mobile stacking) */
-  .receipt-item-screen {
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    align-items: flex-start !important;
-    width: 100% !important;
-    margin-bottom: 4px !important;
-    border: none !important;
+  .receipt-header-screen {
+    border-bottom: 1px dashed black !important;
+    padding-bottom: 3px !important;
+    margin-bottom: 3px !important;
   }
 
-  .receipt-item-screen .label {
-    width: 35% !important;
-    text-align: left !important;
+  .receipt-logo {
+    display: none !important;
+  }
+
+  .receipt-header-screen h2 {
+    font-size: 13px !important;
+    font-weight: bold !important;
+    margin: 0 0 2px 0 !important;
+    color: black !important;
+  }
+
+  .receipt-header-screen h4 {
+    font-size: 11px !important;
+    margin: 0 !important;
     font-weight: normal !important;
   }
 
+  .receipt-item-screen {
+    border-bottom: none !important;
+    padding: 1px 0 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+  }
+
+  .receipt-item-screen .label {
+    color: black !important;
+    font-weight: normal !important;
+    width: 45%;
+  }
+
   .receipt-item-screen .value {
-    width: 65% !important;
-    text-align: right !important;
+    color: black !important;
     font-weight: bold !important;
-    word-break: break-word !important;
+    width: 55%;
+    text-align: right;
   }
 
   .receipt-total-screen {
-    margin-top: 10px !important;
-    padding: 5px 0 !important;
-    border-top: 1px dashed #000 !important;
-    border-bottom: 1px dashed #000 !important;
-    display: flex !important;
-    justify-content: space-between !important;
-    font-size: 16px !important;
+    border-top: 1px dashed black !important;
+    border-bottom: 1px dashed black !important;
+    background-color: transparent !important;
+    padding: 3px 0 !important;
+    margin-top: 4px !important;
+    font-size: 13px !important;
+    color: black !important;
+    border-radius: 0 !important;
   }
 
-  /* 6. Ensure Logo is centered and properly sized */
-  .receipt-logo {
+  .receipt-footer-print {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 10px;
     display: block !important;
-    width: 40mm !important;
-    height: auto !important;
-    margin: 0 auto 5mm auto !important;
   }
+}
+
+.receipt-footer-print {
+  display: none;
 }
