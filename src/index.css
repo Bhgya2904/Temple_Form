@@ -303,29 +303,26 @@ body {
 
 /* Thermal Printer 80mm Specific Rules */
 @media print {
+
   @page {
-    margin: 0 !important;
-    size: 78mm auto;
-    /* 3 inches roll, auto height */
+    size: 80mm auto;
+    margin: 0;
   }
 
   body {
-    background-color: white !important;
-    background-image: none !important;
+    background: white !important;
     margin: 0 !important;
     padding: 0 !important;
-    width: 100% !important;
-    min-height: 0 !important;
-    height: auto !important;
+    width: 78mm !important;
     overflow: hidden !important;
+    -webkit-print-color-adjust: exact;
   }
 
-  /* Hide everything except the receipt */
+  /* Hide everything except receipt */
   .app-main-wrapper,
   .app-container {
     margin: 0 !important;
     padding: 0 !important;
-    width: auto !important;
   }
 
   .app-container> :not(.receipt-wrapper),
@@ -336,37 +333,35 @@ body {
     display: none !important;
   }
 
+  /* Receipt width for thermal printer */
   .receipt-wrapper {
-    width: 100% !important;
-    max-width: 100% !important;
+    width: 78mm !important;
+    max-width: 78mm !important;
     margin: 0 auto !important;
-    /* Forces the receipt to sit directly in the middle of standard A4 paper previews */
     padding: 0 !important;
-    height: auto !important;
     page-break-after: avoid !important;
     page-break-before: avoid !important;
   }
 
   .receipt-container {
-    width: 100% !important;
-    max-width: 100% !important;
+    width: 78mm !important;
+    max-width: 78mm !important;
     margin: 0 auto !important;
-    padding: 2mm !important;
-    /* Tiny edge breathing room */
+    padding: 3mm !important;
     box-shadow: none !important;
     border: none !important;
-    border-radius: 0;
+    border-radius: 0 !important;
+
     font-family: 'Courier New', Courier, monospace !important;
     font-size: 13px !important;
-    /* slightly larger for readability on full span */
-    line-height: 1.2 !important;
+    line-height: 1.25 !important;
     color: black !important;
   }
 
   .receipt-header-screen {
     border-bottom: 1px dashed black !important;
-    padding-bottom: 3px !important;
-    margin-bottom: 3px !important;
+    padding-bottom: 4px !important;
+    margin-bottom: 4px !important;
   }
 
   .receipt-logo {
@@ -388,7 +383,7 @@ body {
 
   .receipt-item-screen {
     border-bottom: none !important;
-    padding: 1px 0 !important;
+    padding: 2px 0 !important;
     display: flex !important;
     justify-content: space-between !important;
   }
@@ -409,8 +404,8 @@ body {
   .receipt-total-screen {
     border-top: 1px dashed black !important;
     border-bottom: 1px dashed black !important;
-    background-color: transparent !important;
-    padding: 3px 0 !important;
+    background: transparent !important;
+    padding: 4px 0 !important;
     margin-top: 4px !important;
     font-size: 13px !important;
     color: black !important;
@@ -425,6 +420,7 @@ body {
   }
 }
 
+/* hidden on screen */
 .receipt-footer-print {
   display: none;
 }
