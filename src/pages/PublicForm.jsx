@@ -92,14 +92,37 @@ function PublicForm({ lang, toggleLanguage }) {
     setTimeout(async () => {
       setIsProcessing(false);
       
+      const englishPoojaName = getPoojaNameFromId(formData.pooja, 'en');
+
       // Save to database
       const bookingRecord = await saveBooking({
         ...formData,
         translatedName: translatedData.name || formData.name, 
-        poojaName: getPoojaNameFromId(formData.pooja, 'en'),
+        poojaName: englishPoojaName,
         poojaNameTe: getPoojaNameFromId(formData.pooja, 'te'),
         payment_status: 'PAID'
       });
+
+      // Try sending WhatsApp receipt in the background
+      if (formData.mobile) {
+         try {
+           const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+           await fetch(`${backendUrl}/api/send-receipt`, {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json' },
+             body: JSON.stringify({
+               mobile: formData.mobile,
+               name: formData.name,
+               pooja: englishPoojaName,
+               amount: formData.amount,
+               receiptNumber: bookingRecord.transactionId,
+               date: new Date(formData.date).toLocaleDateString()
+             })
+           });
+         } catch(err) {
+           console.error("WhatsApp trigger failed. Backend might be offline.", err);
+         }
+      }
       
       setReceiptData(bookingRecord);
       setView('receipt');
@@ -387,16 +410,17 @@ function PublicForm({ lang, toggleLanguage }) {
                 <span>₹{formData.amount}</span>
               </div>
               
-              {/* QR Code Section */}
-              <div className="text-center mt-4">
+              {/* QR Code Section - Visible on screen, hidden in print */}
+              <div className="text-center mt-4 no-print">
                 <QRCode 
                   value={`TXN:${receiptData?.transactionId}|Pooja:${formData.pooja}|Amt:${formData.amount}`} 
-                  size={80} 
+                  size={100} 
                   level="L"
-                  style={{border: '4px solid white', borderRadius: '4px', background: 'white'}}
+                  style={{border: '4px solid white', borderRadius: '4px', background: 'white', display: 'inline-block'}}
                 />
+                <p className="text-muted small mt-2 no-print">Scan to verify booking</p>
               </div>
-
+              
               {/* Only visible when printing, explicitly hidden on screen */}
               <div className="receipt-footer-print mt-3 text-center">
                 *** <br />
