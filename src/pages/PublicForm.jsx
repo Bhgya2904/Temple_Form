@@ -113,6 +113,9 @@ function PublicForm({ lang, toggleLanguage }) {
              body: JSON.stringify({
                mobile: formData.mobile,
                name: formData.name,
+               gothram: formData.gothram,
+               nakshatram: formData.nakshatram,
+               raasi: formData.raasi,
                pooja: englishPoojaName,
                amount: formData.amount,
                receiptNumber: bookingRecord.transactionId,

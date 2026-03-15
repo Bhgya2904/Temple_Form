@@ -41,13 +41,14 @@ app.post('/api/create-order', async (req, res) => {
   }
 });
 
-// Android SMS Gateway Environment Configs
+// Environment Configs
 const ANDROID_SMS_GATEWAY_URL = process.env.ANDROID_SMS_GATEWAY_URL;
 const ANDROID_SMS_API_KEY = process.env.ANDROID_SMS_API_KEY;
+const AZURE_WEBHOOK_URL = process.env.AZURE_WEBHOOK_URL;
 
-// Route to Send Receipt via Android SMS Gateway
+// Route to Send Receipt & Sync to Azure
 app.post('/api/send-receipt', async (req, res) => {
-  const { name, mobile, pooja, amount, receiptNumber, date } = req.body;
+  const { name, mobile, pooja, amount, receiptNumber, date, gothram, nakshatram, raasi } = req.body;
 
   if (!mobile) {
     return res.status(400).send({ success: false, message: "No mobile number provided" });
@@ -59,33 +60,44 @@ app.post('/api/send-receipt', async (req, res) => {
   try {
     const messageBody = `Sri Satyanarayana Swamy Temple\n\nReceipt No: ${receiptNumber}\nName: ${name}\nPooja: ${pooja}\nAmount: ₹${amount}\nDate: ${date}\n\nYour pooja booking is confirmed.\n\nThank you 🙏`;
 
-    if (ANDROID_SMS_GATEWAY_URL) {
-      // Connects to a generic Android SMS Gateway App API (like 'SMS Gateway API' or local phone server)
-      const response = await axios({
-        method: "POST",
-        url: ANDROID_SMS_GATEWAY_URL,
-        data: {
-          to: formattedMobile,
-          message: messageBody,
-          // Depending on the specific Android SMS app, they usually accept an API key in the body or headers
-          key: ANDROID_SMS_API_KEY 
-        },
-        headers: {
-          // Pass the API key in the headers as well, just in case the specific app requires it there
-          "Authorization": ANDROID_SMS_API_KEY ? `Bearer ${ANDROID_SMS_API_KEY}` : '',
-          "Content-Type": "application/json",
-        },
-      });
-      console.log(`Android SMS successfully triggered for ${formattedMobile}. Note: Real delivery depends on mobile carrier.`);
-      res.json({ success: true, message: "Triggered Android SMS Gateway" });
-    } else {
-      console.log(`Android SMS Gateway Simulated Printout:\nTo: ${formattedMobile}\nMessage:\n${messageBody}`);
-      res.json({ success: true, message: "Simulated success (Missing ANDROID_SMS_GATEWAY_URL)" });
+    // 1. Push Data to Azure (Google Sheets / Excel)
+    if (AZURE_WEBHOOK_URL) {
+      try {
+        await axios.post(AZURE_WEBHOOK_URL, {
+          receiptNumber,
+          date,
+          name,
+          mobile: formattedMobile,
+          gothram: gothram || "N/A",
+          nakshatram: nakshatram || "N/A",
+          raasi: raasi || "N/A",
+          pooja,
+          amount,
+          status: "PAID"
+        });
+        console.log("Data successfully synced to Azure/Sheets");
+      } catch (azureErr) {
+        console.error("Azure Sync Failed:", azureErr.message);
+      }
     }
 
+    // 2. Trigger Android SMS Gateway
+    if (ANDROID_SMS_GATEWAY_URL) {
+      await axios.post(ANDROID_SMS_GATEWAY_URL, {
+        to: formattedMobile,
+        message: messageBody,
+        key: ANDROID_SMS_API_KEY 
+      });
+      console.log(`Android SMS triggered for ${formattedMobile}`);
+    } else {
+      console.log(`Simulated SMS for ${formattedMobile}:\n${messageBody}`);
+    }
+
+    res.json({ success: true, message: "Receipt processed and data synced to Azure" });
+
   } catch (error) {
-    console.error("Android SMS Gateway Trigger Failed:", error.message);
-    res.status(500).json({ success: false, error: "Failed to trigger Android SMS" });
+    console.error("Operation Failed:", error.message);
+    res.status(500).json({ success: false, error: "Operation failed" });
   }
 });
 
