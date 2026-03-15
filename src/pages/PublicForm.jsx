@@ -106,7 +106,7 @@ function PublicForm({ lang, toggleLanguage }) {
       // Try sending WhatsApp receipt in the background
       if (formData.mobile) {
          try {
-           const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+           const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://temple-form.onrender.com';
            await fetch(`${backendUrl}/api/send-receipt`, {
              method: 'POST',
              headers: { 'Content-Type': 'application/json' },
