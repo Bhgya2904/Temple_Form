@@ -58,7 +58,7 @@ function AdminDashboard() {
       return;
     }
 
-    const headers = ["TXN ID", "Date", "Devotee Name", "Mobile", "Gothram", "Nakshatram", "Raasi", "Pooja", "Amount", "Status"];
+    const headers = ["TXN ID", "Date", "Devotee Name", "Mobile", "Gothram", "Nakshatram", "Raasi", "Pooja", "Amount", "Method", "Status"];
     const rows = filteredBookings.map(b => [
       b.transactionId,
       new Date(b.timestamp).toLocaleString(),
@@ -69,6 +69,7 @@ function AdminDashboard() {
       b.raasi || '',
       b.poojaName || b.pooja,
       b.amount,
+      b.payment_method || 'UPI',
       b.payment_status
     ]);
 
@@ -196,6 +197,7 @@ function AdminDashboard() {
                 <th className="border-0">Mobile</th>
                 <th className="border-0">Pooja</th>
                 <th className="border-0 text-end">Amount</th>
+                <th className="border-0 text-center">Method</th>
                 <th className="border-0 text-center">Status</th>
               </tr>
             </thead>
@@ -217,6 +219,11 @@ function AdminDashboard() {
                     <span className="badge bg-light text-dark border">{b.poojaName || b.pooja}</span>
                   </td>
                   <td className="text-end fw-bold">₹{b.amount}</td>
+                  <td className="text-center">
+                    <span className={`badge ${b.payment_method === 'CASH' ? 'bg-info' : 'bg-primary'} bg-opacity-10 ${b.payment_method === 'CASH' ? 'text-info' : 'text-primary'} border px-2 py-1`}>
+                      {b.payment_method || 'UPI'}
+                    </span>
+                  </td>
                   <td className="text-center">
                     <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1">
                       {b.payment_status}

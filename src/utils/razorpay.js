@@ -27,7 +27,7 @@ export const initializeRazorpayPayment = async (amount, devoteeData, onSuccess, 
     return;
   }
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
 
   let order_id = null;
   try {

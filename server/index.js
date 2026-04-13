@@ -18,29 +18,6 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET || 'dummy',
 });
 
-// Razorpay Order Creation Endpoint
-app.post('/api/create-order', async (req, res) => {
-  const { amount, receipt } = req.body;
-  if (!amount) {
-    return res.status(400).json({ success: false, message: 'Amount is required' });
-  }
-
-  try {
-    // Amount is expected in INR; Razorpay expects amount in paise
-    const order = await razorpay.orders.create({
-      amount: Math.round(Number(amount) * 100),
-      currency: 'INR',
-      receipt: receipt || `receipt_${Date.now()}`,
-      payment_capture: 1,
-    });
-
-    res.json(order);
-  } catch (error) {
-    console.error('Razorpay order creation failed:', error);
-    res.status(500).json({ success: false, error: error.message || 'Failed to create order' });
-  }
-});
-
 // Environment Configs
 const ANDROID_SMS_GATEWAY_URL = process.env.ANDROID_SMS_GATEWAY_URL;
 const ANDROID_SMS_API_KEY = process.env.ANDROID_SMS_API_KEY;

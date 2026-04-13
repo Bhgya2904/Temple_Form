@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button, Spinner } from 'react-bootstrap';
-import { Printer, Edit3, CheckCircle, Languages, IndianRupee } from 'lucide-react';
+import { Printer, Edit3, CheckCircle, Languages, IndianRupee, Banknote, Smartphone, ChevronRight } from 'lucide-react';
 import { QRCodeSVG as QRCode } from 'qrcode.react';
 import logo from '../assets/logo.png';
 import { dictionaries, poojas } from '../utils/constants';
@@ -24,7 +24,8 @@ function PublicForm({ lang, toggleLanguage }) {
     raasi: '',
     date: getTodayString(),
     pooja: '',
-    amount: 0
+    amount: 0,
+    payment_method: 'UPI'
   });
 
   const [translatedData, setTranslatedData] = useState({
@@ -66,6 +67,11 @@ function PublicForm({ lang, toggleLanguage }) {
     }
   };
 
+  const isSelectedPoojaDynamic = () => {
+    const pooja = poojas.find(p => p.id === formData.pooja);
+    return pooja?.isDynamic || false;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.pooja || !formData.name) {
@@ -83,11 +89,23 @@ function PublicForm({ lang, toggleLanguage }) {
     setTranslatedData(translated);
     setIsTranslating(false);
 
-    // Switch to fake payment UPI QR View
-    setView('payment');
+    // Switch to payment method selection view
+    setView('method');
   };
 
-  const handleFakePaymentConfirm = async () => {
+  const selectPaymentMethod = (method) => {
+    setFormData({ ...formData, payment_method: method });
+    if (method === 'UPI') {
+      setView('payment');
+    } else {
+      handleFakePaymentConfirm(method);
+    }
+  };
+
+  const handleFakePaymentConfirm = async (method = 'UPI') => {
+    // For Cash, skip the long processing delay to make it feel "direct"
+    const delay = method === 'CASH' ? 500 : 1500;
+    
     setIsProcessing(true);
     setTimeout(async () => {
       setIsProcessing(false);
@@ -97,6 +115,7 @@ function PublicForm({ lang, toggleLanguage }) {
       // Save to database
       const bookingRecord = await saveBooking({
         ...formData,
+        payment_method: method,
         translatedName: translatedData.name || formData.name, 
         poojaName: englishPoojaName,
         poojaNameTe: getPoojaNameFromId(formData.pooja, 'te'),
@@ -106,7 +125,7 @@ function PublicForm({ lang, toggleLanguage }) {
       // Try sending WhatsApp receipt in the background
       if (formData.mobile) {
          try {
-           const backendUrl = import.meta.env.VITE_BACKEND_URL || 'https://temple-form.onrender.com';
+           const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
            await fetch(`${backendUrl}/api/send-receipt`, {
              method: 'POST',
              headers: { 'Content-Type': 'application/json' },
@@ -271,14 +290,17 @@ function PublicForm({ lang, toggleLanguage }) {
                     type="number"
                     name="amount"
                     value={formData.amount}
-                    readOnly
+                    onChange={handleInputChange}
+                    readOnly={!isSelectedPoojaDynamic()}
                     style={{
-                      backgroundColor: 'var(--primary-light)',
+                      backgroundColor: isSelectedPoojaDynamic() ? 'white' : 'var(--primary-light)',
                       color: 'var(--primary-hover)',
                       fontWeight: '800',
                       fontSize: '1.2rem',
-                      borderColor: 'transparent'
+                      borderColor: isSelectedPoojaDynamic() ? 'var(--primary-color)' : 'transparent'
                     }}
+                    placeholder={isSelectedPoojaDynamic() ? "Enter amount" : ""}
+                    required
                   />
                 </Form.Group>
               </Col>
@@ -301,33 +323,93 @@ function PublicForm({ lang, toggleLanguage }) {
             </div>
           </Form>
         </div>
+      ) : view === 'method' ? (
+        <div className="card-container py-5">
+           <div className="text-center mb-4">
+              <h3 className="fw-bold mb-1" style={{ color: 'var(--primary-color)' }}>
+                {t.paymentMethod}
+              </h3>
+              <p className="text-muted small">{lang === 'te' ? 'దయచేసి ఒకదానిని ఎంచుకోండి' : 'Choose a way to pay'}</p>
+           </div>
+          
+          <div className="payment-summary-card mb-4" style={{ textAlign: 'left' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+               <span className="summary-badge">{lang === 'te' ? 'బిల్లు వివరాలు' : 'Order Summary'}</span>
+               <span className="fw-bold text-dark">₹{formData.amount}</span>
+            </div>
+            <div className="d-flex align-items-center gap-3">
+               <div className="bg-white p-2 rounded-3 shadow-sm" style={{ border: '1px solid #eee' }}>
+                  <img src={logo} alt="Temple" style={{ width: '30px', height: '30px' }} />
+               </div>
+               <div>
+                  <h5 className="mb-0 fw-bold">{getPoojaNameFromId(formData.pooja, lang)}</h5>
+                  <p className="mb-0 text-muted small">{t.date}: {new Date(formData.date).toLocaleDateString(lang === 'te' ? 'te-IN' : 'en-IN')}</p>
+               </div>
+            </div>
+          </div>
+
+          <div className="payment-methods-wrapper mb-4">
+            <div className="payment-item" onClick={() => selectPaymentMethod('UPI')}>
+               <div className="payment-item-icon" style={{ backgroundColor: '#e3f2fd', color: '#1976d2' }}>
+                  <Smartphone size={24} />
+               </div>
+               <div className="payment-item-content">
+                  <div className="payment-item-title">{t.upi}</div>
+                  <div className="payment-item-subtitle">{lang === 'te' ? 'ఫోన్ పే, గూగుల్ పే ద్వారా' : 'Instantly pay via any UPI app'}</div>
+               </div>
+               <ChevronRight className="payment-item-arrow" size={18} />
+            </div>
+
+            <div className="payment-item" onClick={() => selectPaymentMethod('CASH')}>
+               <div className="payment-item-icon" style={{ backgroundColor: '#e8f5e9', color: '#2e7d32' }}>
+                  <Banknote size={24} />
+               </div>
+               <div className="payment-item-content">
+                  <div className="payment-item-title text-success">{t.cash}</div>
+                  <div className="payment-item-subtitle">{lang === 'te' ? 'కౌంటర్ వద్ద నగదు రూపంలో' : 'Pay manually at the counter'}</div>
+               </div>
+               <ChevronRight className="payment-item-arrow" size={18} />
+            </div>
+          </div>
+
+          <div className="text-center">
+            <Button variant="link" className="text-muted text-decoration-none small" onClick={() => setView('form')}>
+               {lang === 'te' ? '← వివరాలను సవరించండి' : '← Edit Booking Details'}
+            </Button>
+          </div>
+        </div>
       ) : view === 'payment' ? (
         <div className="card-container text-center py-5">
           <h3 className="mb-4 fw-bold" style={{ color: 'var(--primary-color)' }}>
             {lang === 'te' ? 'చెల్లించడానికి స్కాన్ చేయండి' : 'Scan to Pay'}
           </h3>
-          <p className="text-muted mb-4">
-            {lang === 'te' 
-              ? `దయచేసి పూజ కొరకు ₹${formData.amount} చెల్లించండి` 
-              : `Please pay ₹${formData.amount} for ${getPoojaNameFromId(formData.pooja, lang)}`}
-          </p>
           
-          <div className="bg-white p-4 d-inline-block rounded-4 border shadow-sm mb-4">
+          <div className="payment-summary-card mb-4">
+             <div className="d-flex align-items-center justify-content-center gap-3">
+                <Smartphone className="text-primary" size={24} />
+                <span className="fs-2 fw-bold">₹{formData.amount}</span>
+             </div>
+             <p className="text-muted mb-0 small mt-1">
+                {lang === 'te' ? `${getPoojaNameFromId(formData.pooja, lang)} కొరకు` : `for ${getPoojaNameFromId(formData.pooja, lang)}`}
+             </p>
+          </div>
+          
+          <div className="bg-white p-4 d-inline-block rounded-4 border shadow-sm mb-4" style={{ backgroundColor: '#fff' }}>
             <QRCode 
               value={`upi://pay?pa=temple@upi&pn=SriSatyanarayanSwamiTemple&am=${formData.amount}&cu=INR`} 
-              size={220} 
+              size={200} 
               level="H" 
             />
           </div>
           
-          <div className="mb-4">
-            <p className="mb-1 text-muted small text-uppercase fw-bold">UPI ID</p>
-            <p className="fs-5" style={{fontFamily: 'monospace'}}>temple@upi</p>
+          <div className="mb-4 p-3 rounded-3 bg-light d-inline-block">
+            <p className="mb-1 text-muted small text-uppercase fw-bold" style={{ fontSize: '0.7rem' }}>Temple UPI ID</p>
+            <p className="fs-6 mb-0" style={{fontFamily: 'monospace', color: 'var(--primary-color)' }}>temple@upi</p>
           </div>
           
           <div className="d-grid mt-2 mx-auto" style={{ maxWidth: '300px' }}>
             <Button 
-              onClick={handleFakePaymentConfirm} 
+              onClick={() => handleFakePaymentConfirm('UPI')} 
               disabled={isProcessing} 
               className="btn-primary-custom d-flex justify-content-center align-items-center gap-2" 
               size="lg"
@@ -344,7 +426,7 @@ function PublicForm({ lang, toggleLanguage }) {
                 </>
               )}
             </Button>
-            <Button variant="link" className="mt-3 text-muted text-decoration-none" onClick={() => setView('form')} disabled={isProcessing}>
+            <Button variant="link" className="mt-3 text-muted text-decoration-none" onClick={() => setView('method')} disabled={isProcessing}>
                {lang === 'te' ? 'వెనుకకు' : 'Cancel & Go Back'}
             </Button>
           </div>
@@ -359,14 +441,7 @@ function PublicForm({ lang, toggleLanguage }) {
             </div>
 
             <div className="receipt-body">
-              <div className="receipt-item-screen">
-                <span className="label">TXN ID:</span>
-                <span className="value" style={{fontFamily: 'monospace', fontSize: '0.9rem'}}>{receiptData?.transactionId}</span>
-              </div>
-              <div className="receipt-item-screen">
-                <span className="label">Status:</span>
-                <span className="value text-success" style={{fontWeight: '800'}}>PAID</span>
-              </div>
+
               <div className="receipt-item-screen mt-2" style={{ borderTop: '1px dashed #eee', paddingTop: '10px' }}>
                 <span className="label">{t.date}:</span>
                 <span className="value">
